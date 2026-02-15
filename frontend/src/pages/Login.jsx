@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import API from "../api/axios";
 import "./Auth.css";
 
 export default function Login() {
@@ -23,16 +24,20 @@ export default function Login() {
     setLoading(true);
 
     try {
-      // ✅ TEMP LOGIN (for frontend testing)
-      // Later we will connect backend API
-      if (!form.email || !form.password) {
-        throw new Error("Please enter email and password");
-      }
+      const res = await API.post("/auth/login", form);
 
-      // Example: if student logs in -> dashboard
+      alert("Login Successful ✅");
+
+      // Save token
+      localStorage.setItem("token", res.data.token);
+
+      // Save user details
+      localStorage.setItem("user", JSON.stringify(res.data.user));
+
       navigate("/dashboard");
     } catch (err) {
-      setError(err.message || "Login failed");
+      console.log(err.response?.data);
+      setError(err.response?.data?.message || "Login failed");
     } finally {
       setLoading(false);
     }
@@ -84,5 +89,3 @@ export default function Login() {
     </div>
   );
 }
-
-

@@ -1,70 +1,99 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import API from "../api/axios";
 import "./Auth.css";
 
 export default function Register() {
-  const [formData, setFormData] = useState({
+  const navigate = useNavigate();
+
+  const [form, setForm] = useState({
     name: "",
     email: "",
     password: "",
     role: "student",
   });
 
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  const handleSubmit = (e) => {
+  function handleChange(e) {
+    setForm({ ...form, [e.target.name]: e.target.value });
+  }
+
+  async function handleSubmit(e) {
     e.preventDefault();
-    console.log("Register Data:", formData);
-    alert("Register clicked (backend not connected yet)");
-  };
+    setError("");
+    setLoading(true);
+
+    try {
+      const res = await API.post("/auth/register", form);
+
+      alert("Registered Successfully ✅");
+
+      console.log(res.data);
+
+      navigate("/login");
+    } catch (err) {
+      console.log(err.response?.data);
+
+      setError(err.response?.data?.message || "Registration failed");
+    } finally {
+      setLoading(false);
+    }
+  }
 
   return (
     <div className="auth-page">
       <div className="auth-card">
         <h1 className="auth-title">Create Account ✨</h1>
-        <p className="auth-subtitle">Register to start your QuizQuest journey</p>
+        <p className="auth-subtitle">Register to start your quiz journey</p>
 
-        <form onSubmit={handleSubmit} className="auth-form">
-          <label>Full Name</label>
-          <input
-            type="text"
-            name="name"
-            placeholder="Enter your full name"
-            value={formData.name}
-            onChange={handleChange}
-            required
-          />
+        {error && <div className="auth-error">{error}</div>}
 
-          <label>Email</label>
-          <input
-            type="email"
-            name="email"
-            placeholder="Enter your email"
-            value={formData.email}
-            onChange={handleChange}
-            required
-          />
+        <form className="auth-form" onSubmit={handleSubmit}>
+          <div className="auth-field">
+            <label>Full Name</label>
+            <input
+              type="text"
+              name="name"
+              placeholder="Enter your full name"
+              value={form.name}
+              onChange={handleChange}
+            />
+          </div>
 
-          <label>Password</label>
-          <input
-            type="password"
-            name="password"
-            placeholder="Create a password"
-            value={formData.password}
-            onChange={handleChange}
-            required
-          />
+          <div className="auth-field">
+            <label>Email</label>
+            <input
+              type="email"
+              name="email"
+              placeholder="Enter your email"
+              value={form.email}
+              onChange={handleChange}
+            />
+          </div>
 
-          <label>Role</label>
-          <select name="role" value={formData.role} onChange={handleChange}>
-            <option value="student">Student</option>
-            <option value="admin">Admin</option>
-          </select>
+          <div className="auth-field">
+            <label>Password</label>
+            <input
+              type="password"
+              name="password"
+              placeholder="Enter password"
+              value={form.password}
+              onChange={handleChange}
+            />
+          </div>
 
-          <button type="submit" className="auth-btn">
-            Register
+          <div className="auth-field">
+            <label>Role</label>
+            <select name="role" value={form.role} onChange={handleChange}>
+              <option value="student">Student</option>
+              <option value="teacher">Teacher</option>
+            </select>
+          </div>
+
+          <button className="auth-btn" type="submit" disabled={loading}>
+            {loading ? "Registering..." : "Register"}
           </button>
         </form>
 
@@ -75,8 +104,3 @@ export default function Register() {
     </div>
   );
 }
-
-
-
-
-
